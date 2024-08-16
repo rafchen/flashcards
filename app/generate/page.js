@@ -1,24 +1,15 @@
 'use client';
-
-import { useState, useEffect } from "react";
-import { collection, doc, getDoc, writeBatch } from "firebase/firestore";
+import { useState } from "react";
+import { collection, doc, getDoc, writeBatch, setDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Box, Container, Paper, TextField, Typography, Button, Grid, CardActionArea, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-import { useUser, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function Generate() {
-    const { isLoaded, isSignedIn, user } = useUser();
     const [flashcards, setFlashcards] = useState([]);
-    const [flipped, setFlipped] = useState({});
+    const [flipped, setFlipped] = useState([]);
     const [text, setText] = useState('');
     const [name, setName] = useState('');
     const [open, setOpen] = useState(false);
-
-    useEffect(() => {
-        if (!isLoaded || !isSignedIn) {
-            return;
-        }
-    }, [isLoaded, isSignedIn]);
 
     const handleSubmit = async () => {
         try {
@@ -34,7 +25,7 @@ export default function Generate() {
 
             const data = await response.json();
             console.log("Flashcards response:", data);
-
+            
             if (Array.isArray(data.flashcards)) {
                 setFlashcards(data.flashcards);
             } else {
@@ -45,10 +36,10 @@ export default function Generate() {
         }
     };
 
-    const handleCardClick = (index) => {
+    const handleCardClick = (id) => {
         setFlipped((prev) => ({
             ...prev,
-            [index]: !prev[index],
+            [id]: !prev[id],
         }));
     };
 
@@ -61,36 +52,34 @@ export default function Generate() {
             alert('Please enter a name for your flashcard set.');
             return;
         }
-    
-        if (!user || !user.id) {
-            alert('User not authenticated.');
-            return;
-        }
-    
+
         try {
             const batch = writeBatch(db);
-            const userId = user.id;
 
+            // Replace with a valid user ID
+            const userId = "fixedUserId"; // Update this as needed
             const userDocRef = doc(collection(db, 'users'), userId);
             const userDocSnap = await getDoc(userDocRef);
 
-            const flashcardSets = userDocSnap.exists() ? userDocSnap.data().flashcardSets || [] : [];
-            const updatedSets = [...flashcardSets, { name }];
+            // Create a reference for the flashcard set
+            const flashcardSetRef = doc(collection(userDocRef, 'flashcardSets'), name);
 
-            if (userDocSnap.exists()) {
-                batch.update(userDocRef, { flashcardSets: updatedSets });
-            } else {
-                batch.set(userDocRef, { flashcardSets: updatedSets });
-            }
+            // Create flashcards as documents within the flashcard set
+            flashcards.forEach((flashcard, index) => {
+                const flashcardDocRef = doc(collection(flashcardSetRef, 'flashcards'));
+                batch.set(flashcardDocRef, {
+                    front: flashcard.front,
+                    back: flashcard.back
+                });
+            });
 
-            const setDocRef = doc(collection(db, 'users', userId, 'flashcardSets'), name);
-            batch.set(setDocRef, { flashcards });
-
+            // Commit the batch
             await batch.commit();
 
             alert('Flashcards saved successfully!');
             handleClose();
             setName('');
+            setFlashcards([]);
         } catch (error) {
             console.error('Error saving flashcards:', error);
             alert('An error occurred while saving flashcards. Please try again.');
@@ -131,116 +120,105 @@ export default function Generate() {
                 </Paper>
             </Box>
 
-            <SignedIn>
-                {Array.isArray(flashcards) && flashcards.length > 0 && (
-                    <Box sx={{ mt: 4 }}>
-                        <Typography variant='h5'>Your Flashcards</Typography>
-                        <Grid container spacing={3}>
-                            {flashcards.map((flashcard, index) => (
-                                <Grid item xs={12} sm={6} md={4} key={index}>
-                                    <Card>
-                                        <CardActionArea onClick={() => handleCardClick(index)}>
-                                            <CardContent
+            {Array.isArray(flashcards) && flashcards.length > 0 && (
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant='h5'>Your Flashcards</Typography>
+                    <Grid container spacing={3}>
+                        {flashcards.map((flashcard, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={index}>
+                                <Card>
+                                    <CardActionArea onClick={() => handleCardClick(index)}>
+                                        <CardContent
+                                            sx={{
+                                                height: '200px', // Adjust height as needed
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                overflow: 'hidden',
+                                                position: 'relative',
+                                            }}
+                                        >
+                                            <Box
                                                 sx={{
-                                                    height: '200px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    overflow: 'hidden',
-                                                    position: 'relative',
-                                                }}
-                                            >
-                                                <Box
-                                                    sx={{
-                                                        perspective: '1000px',
+                                                    perspective: '1000px',
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    '& > div': {
+                                                        transition: 'transform 0.6s',
+                                                        transformStyle: 'preserve-3d',
+                                                        position: 'relative',
                                                         width: '100%',
                                                         height: '100%',
-                                                        '& > div': {
-                                                            transition: 'transform 0.6s',
-                                                            transformStyle: 'preserve-3d',
-                                                            position: 'relative',
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
-                                                            transform: flipped[index]
-                                                                ? 'rotateY(180deg)'
-                                                                : 'rotateY(0deg)',
-                                                        },
-                                                        '& > div > div': {
-                                                            position: 'absolute',
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            backfaceVisibility: 'hidden',
-                                                            display: 'flex',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            padding: 2,
-                                                            boxSizing: 'border-box',
-                                                            overflow: 'auto',
-                                                            maxHeight: '100%',
-                                                        },
-                                                        '& > div > div:nth-of-type(2)': {
-                                                            transform: 'rotateY(180deg)',
-                                                        },
-                                                    }}
-                                                >
+                                                        boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
+                                                        transform: flipped[index]
+                                                            ? 'rotateY(180deg)'
+                                                            : 'rotateY(0deg)',
+                                                    },
+                                                    '& > div > div': {
+                                                        position: 'absolute',
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        backfaceVisibility: 'hidden',
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        padding: 2,
+                                                        boxSizing: 'border-box',
+                                                        overflow: 'auto', // Enable scrolling if needed
+                                                        maxHeight: '100%', // Ensure scrolling if content overflows
+                                                    },
+                                                    '& > div > div:nth-of-type(2)': {
+                                                        transform: 'rotateY(180deg)',
+                                                    },
+                                                }}
+                                            >
+                                                <div>
                                                     <div>
-                                                        <div>
-                                                            <Typography
-                                                                variant="h5"
-                                                                component="div"
-                                                                sx={{
-                                                                    overflow: 'auto',
-                                                                    maxHeight: '100%',
-                                                                }}
-                                                            >
-                                                                {flashcard.front}
-                                                            </Typography>
-                                                        </div>
-                                                        <div>
-                                                            <Typography
-                                                                variant="h5"
-                                                                component="div"
-                                                                sx={{
-                                                                    overflow: 'auto',
-                                                                    maxHeight: '100%',
-                                                                }}
-                                                            >
-                                                                {flashcard.back}
-                                                            </Typography>
-                                                        </div>
+                                                        <Typography
+                                                            variant="h5"
+                                                            component="div"
+                                                            sx={{
+                                                                overflow: 'auto',
+                                                                maxHeight: '100%', // Ensure text area is scrollable
+                                                            }}
+                                                        >
+                                                            {flashcard.front}
+                                                        </Typography>
                                                     </div>
-                                                </Box>
-                                            </CardContent>
-                                        </CardActionArea>
-                                    </Card>
-                                </Grid>
-                            ))}
-                        </Grid>
-                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                            <Button variant='contained' color="secondary" onClick={handleOpen}>
-                                Save
-                            </Button>
-                        </Box>
+                                                    <div>
+                                                        <Typography
+                                                            variant="h5"
+                                                            component="div"
+                                                            sx={{
+                                                                overflow: 'auto',
+                                                                maxHeight: '100%', // Ensure text area is scrollable
+                                                            }}
+                                                        >
+                                                            {flashcard.back}
+                                                        </Typography>
+                                                    </div>
+                                                </div>
+                                            </Box>
+                                        </CardContent>
+                                    </CardActionArea>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                        <Button variant='contained' color="secondary" onClick={handleOpen}>
+                            Save
+                        </Button>
                     </Box>
-                )}
-            </SignedIn>
-            
-            <SignedOut>
-                <Typography variant="h6" sx={{ mt: 4 }}>
-                    Please sign in to save and view your flashcards.
-                </Typography>
-                <SignInButton />
-            </SignedOut>
-
+                </Box>
+            )}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Save Flashcard Set</DialogTitle>
                 <DialogContent>
-                    Please enter a name for your flashcards collection:
                     <TextField
                         autoFocus
                         margin="dense"
-                        label="Collection Name"
+                        label="Set Name"
                         type="text"
                         fullWidth
                         value={name}

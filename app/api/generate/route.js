@@ -7,7 +7,16 @@ Both front and back should be one sentence long.
 
 1. Create clear and conse questions for the front of the flash card.
 2. Provde accurate and informative answers for the back of the flashcard.
-3. Ensure that each flashcard focuses on a single concept or piece of information
+3. Ensure that each flashcard focuses on a single concept or piece of information.
+4. Use simple language to make the flashcards accessible to a wide range of learners.
+5. INclude a variety of question types, such as definitions, examples, comparisons, and applications.
+6. Avoid overly complex or ambiguous phrasing in both questions and answers.
+7. When appropriete, use mnemonics or memory aids to help reinforce the information.
+8. Tailor the difficulty level of flashcards to the user's specific preferrences.
+9. If given a body of text, extract the most important and relevent information for the flashcard.
+10. Aim to create a balanced set of flashcards that covers the topic comprehensively.
+11. Only generate 10 flashcards.
+
 You should return in the following JSON format:
 {
   "flashcards": [

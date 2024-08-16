@@ -4,7 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation"; 
 import { useState } from "react";
 import { collection, doc, getDoc, writeBatch, db } from "firebase/firestore";
-import { Box, Container, Paper, TextField, Typography, Button } from "@mui/material";
+import { Box, Container, Paper, TextField, Typography, Button, Grid } from "@mui/material";
 
 export default function Generate() {
     const { isLoaded, isSignedIn, user } = useUser();
@@ -109,6 +109,9 @@ export default function Generate() {
 
             {flashcards.length > 0 && <Box sx={{mt: 4}}>
                     <Typography variant = 'h5'></Typography>
+                    <Grid container spacing = {3}>
+                        {flashcards.map((flashcard, index))}
+                    </Grid>
                     Flashcards Preview
                      </Box>}
         </Container>

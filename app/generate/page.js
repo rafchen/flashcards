@@ -1,16 +1,20 @@
 'use client';
-import { useState } from "react";
-import { collection, doc, getDoc, writeBatch, setDoc } from "firebase/firestore";
+
+import { useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
+import { collection, doc, getDoc, writeBatch } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Box, Container, Paper, TextField, Typography, Button, Grid, CardActionArea, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 
 export default function Generate() {
+    const { isLoaded, isSignedIn, user } = useUser(); // Include isLoaded and isSignedIn
     const [flashcards, setFlashcards] = useState([]);
     const [flipped, setFlipped] = useState([]);
     const [text, setText] = useState('');
     const [name, setName] = useState('');
     const [open, setOpen] = useState(false);
 
+    // Fetch flashcards from API
     const handleSubmit = async () => {
         try {
             const response = await fetch('/api/generate', {
@@ -25,7 +29,7 @@ export default function Generate() {
 
             const data = await response.json();
             console.log("Flashcards response:", data);
-            
+
             if (Array.isArray(data.flashcards)) {
                 setFlashcards(data.flashcards);
             } else {
@@ -36,6 +40,7 @@ export default function Generate() {
         }
     };
 
+    // Handle card flip
     const handleCardClick = (id) => {
         setFlipped((prev) => ({
             ...prev,
@@ -43,29 +48,41 @@ export default function Generate() {
         }));
     };
 
+    // Open dialog
     const handleOpen = () => setOpen(true);
 
+    // Close dialog
     const handleClose = () => setOpen(false);
 
+    // Save flashcards to Firestore
     const saveFlashcards = async () => {
         if (!name.trim()) {
             alert('Please enter a name for your flashcard set.');
             return;
         }
 
+        if (!user) {
+            alert('User not found. Please make sure you are signed in.');
+            return;
+        }
+
         try {
             const batch = writeBatch(db);
 
-            // Replace with a valid user ID
-            const userId = "fixedUserId"; // Update this as needed
-            const userDocRef = doc(collection(db, 'users'), userId);
+            // Use the current user's ID from the Clerk session
+            const userDocRef = doc(collection(db, 'users'), user.id);
             const userDocSnap = await getDoc(userDocRef);
+
+            if (!userDocSnap.exists()) {
+                alert('User document not found.');
+                return;
+            }
 
             // Create a reference for the flashcard set
             const flashcardSetRef = doc(collection(userDocRef, 'flashcardSets'), name);
 
             // Create flashcards as documents within the flashcard set
-            flashcards.forEach((flashcard, index) => {
+            flashcards.forEach((flashcard) => {
                 const flashcardDocRef = doc(collection(flashcardSetRef, 'flashcards'));
                 batch.set(flashcardDocRef, {
                     front: flashcard.front,
@@ -85,6 +102,15 @@ export default function Generate() {
             alert('An error occurred while saving flashcards. Please try again.');
         }
     };
+
+    // Check if user data is loaded and user is signed in
+    if (!isLoaded) {
+        return <Container>Loading...</Container>;
+    }
+
+    if (!isSignedIn) {
+        return <Container>Please sign in to use this feature.</Container>;
+    }
 
     return (
         <Container maxWidth="md">
@@ -130,7 +156,7 @@ export default function Generate() {
                                     <CardActionArea onClick={() => handleCardClick(index)}>
                                         <CardContent
                                             sx={{
-                                                height: '200px', // Adjust height as needed
+                                                height: '200px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -164,8 +190,8 @@ export default function Generate() {
                                                         alignItems: 'center',
                                                         padding: 2,
                                                         boxSizing: 'border-box',
-                                                        overflow: 'auto', // Enable scrolling if needed
-                                                        maxHeight: '100%', // Ensure scrolling if content overflows
+                                                        overflow: 'auto',
+                                                        maxHeight: '100%',
                                                     },
                                                     '& > div > div:nth-of-type(2)': {
                                                         transform: 'rotateY(180deg)',
@@ -179,7 +205,7 @@ export default function Generate() {
                                                             component="div"
                                                             sx={{
                                                                 overflow: 'auto',
-                                                                maxHeight: '100%', // Ensure text area is scrollable
+                                                                maxHeight: '100%',
                                                             }}
                                                         >
                                                             {flashcard.front}
@@ -191,7 +217,7 @@ export default function Generate() {
                                                             component="div"
                                                             sx={{
                                                                 overflow: 'auto',
-                                                                maxHeight: '100%', // Ensure text area is scrollable
+                                                                maxHeight: '100%',
                                                             }}
                                                         >
                                                             {flashcard.back}

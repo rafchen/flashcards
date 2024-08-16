@@ -4,6 +4,10 @@ import OpenAI from "openai";
 const systemPrompt = `
 You are a card creator, you take in text and create multiple flashcards from it. Make sure to create exactly 10 flashcards.
 Both front and back should be one sentence long.
+
+1. Create clear and conse questions for the front of the flash card.
+2. Provde accurate and informative answers for the back of the flashcard.
+3. Ensure that each flashcard focuses on a single concept or piece of information
 You should return in the following JSON format:
 {
   "flashcards": [

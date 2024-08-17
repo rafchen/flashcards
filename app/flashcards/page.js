@@ -41,15 +41,14 @@ export default function Flashcards() {
 
     return <Container maxWidth="100vw">
         <Grid
-            container
-            spacing={3}
+            container spacing={3}
             sx={{ mt: 4 }}>
 
             {flashcards.map((flashcard, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
                     <Card>
                         <CardActionArea 
-                        onClick={() => { handleCardClick(id) }}>
+                        onClick={() => { handleCardClick(index) }}>
                             <CardContent>
                                 <Typography variant="h6">
                                     {flashcard.name}

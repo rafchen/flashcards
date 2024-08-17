@@ -9,33 +9,32 @@ import Head from 'next/head';
 export default function Home() {
   const handleSubmit = async () => {
     try {
-      const response = await fetch('/api/checkout_sessions', {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-          'Origin': 'http://localhost:3000'
+        const checkoutSession = await fetch('/api/checkout_sessions', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const checkoutSessionJson = await checkoutSession.json();
+
+        if (checkoutSession.status === 500) {
+            console.error(checkoutSessionJson.message);
+            return;
         }
-      });
-  
-      const checkoutSession = await response.json();
-  
-      if (response.status === 500) {
-        console.error(checkoutSession.message);
-        return;
-      }
-  
-      const stripe = await getStripe();
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: checkoutSession.sessionId
-      });
-  
-      if (error) {
-        console.warn(error.message);
-      }
+
+        const stripe = await getStripe();
+        const { error } = await stripe.redirectToCheckout({
+            sessionId: checkoutSessionJson.id  
+        });
+
+        if (error) {
+            console.warn(error.message);
+        }
     } catch (error) {
-      console.error('Error during checkout:', error);
+        console.error('Error during checkout:', error);
     }
-  };
+};
 
   return (
     <Container maxWidth="100vw">
@@ -102,7 +101,7 @@ export default function Home() {
               <Typography variant="body1">
                 Access to basic features and limited storage.
               </Typography>
-              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+              <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleSubmit}>
                 Choose Basic
               </Button>
             </Box>

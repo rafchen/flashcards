@@ -21,7 +21,7 @@ export async function POST(req) {
                 recurring:{
                     interval: 'month',
                     interval_count: 1,
-                }
+                },
             },
             quantity: 1
         },

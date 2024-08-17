@@ -37,6 +37,10 @@ export default function Generate() {
         setOpen(true)
     }
 
+    const handleSave = () => {
+        router.push('/flashcards')
+    }
+
     const handleClose = () => {
         setOpen(false)
     }
@@ -166,6 +170,12 @@ export default function Generate() {
                             Save
                         </Button>
                     </Box>
+                    <Button
+                        sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}
+                        onClick={handleSave}
+                    >
+                        Go to Saved Flashcards
+                    </Button>
                 </Box>
             )}
             <Dialog open={open} onClose={handleClose}>

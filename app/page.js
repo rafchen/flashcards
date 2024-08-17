@@ -4,9 +4,15 @@ import Image from "next/image";
 import getStripe from "@/utils/get-stripe";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { AppBar, Button, Container, Toolbar, Typography, Box, Grid } from '@mui/material';
+import { Router, useRouter } from "next/navigation";
 import Head from 'next/head';
 
 export default function Home() {
+  const router = useRouter();
+  const handleGetStarted = () => {
+    router.push('/generate');
+  };
+
   const handleSubmit = async () => {
     try {
         const checkoutSession = await fetch('/api/checkout_sessions', {
@@ -62,7 +68,7 @@ export default function Home() {
         <Typography variant="h5" gutterBottom>
           The easiest way to make flashcards from scratch
         </Typography>
-        <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+        <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleGetStarted}>
           Get Started
         </Button>
       </Box>

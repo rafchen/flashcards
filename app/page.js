@@ -1,3 +1,5 @@
+'use client'
+import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import getStripe from "@/utils/get-stripe";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
@@ -5,6 +7,36 @@ import { AppBar, Button, Container, Toolbar, Typography, Box, Grid } from '@mui/
 import Head from 'next/head';
 
 export default function Home() {
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('/api/checkout_sessions', {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Origin': 'http://localhost:3000'
+        }
+      });
+  
+      const checkoutSession = await response.json();
+  
+      if (response.status === 500) {
+        console.error(checkoutSession.message);
+        return;
+      }
+  
+      const stripe = await getStripe();
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: checkoutSession.sessionId
+      });
+  
+      if (error) {
+        console.warn(error.message);
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+    }
+  };
+
   return (
     <Container maxWidth="100vw">
       <Head>
@@ -82,7 +114,7 @@ export default function Home() {
               <Typography variant="body1">
                 Access to all features with unlimited storage and priority support.
               </Typography>
-              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+              <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleSubmit}>
                 Choose Premium
               </Button>
             </Box>

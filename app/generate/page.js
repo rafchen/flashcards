@@ -147,12 +147,20 @@ export default function Generate() {
                                                 }
                                             }}>
                                                 <div>
-                                                    <div>
+                                                    <div style={{
+                                                        overflowY: 'auto',
+                                                        maxHeight: '100%',
+                                                        padding: '8px',
+                                                    }}>
                                                         <Typography variant="h5" component="div">
                                                             {flashcard.front}
                                                         </Typography>
                                                     </div>
-                                                    <div>
+                                                    <div style={{
+                                                        overflowY: 'auto',
+                                                        maxHeight: '100%',
+                                                        padding: '8px',
+                                                    }}>
                                                         <Typography variant="h5" component="div">
                                                             {flashcard.back}
                                                         </Typography>

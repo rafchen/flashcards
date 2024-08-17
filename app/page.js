@@ -115,7 +115,7 @@ export default function Home() {
           <Grid item xs={12} md={4}>
             <Box sx={{ p: 3, border: '1px solid', borderColor: 'grey.300', borderRadius: 2 }}>
               <Typography variant="h5" gutterBottom>Premium</Typography>
-              <Typography variant="h6" gutterBottom>$15/month</Typography>
+              <Typography variant="h6" gutterBottom>$10/month</Typography>
               <Typography variant="body1">
                 Access to all features with unlimited storage and priority support.
               </Typography>

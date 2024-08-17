@@ -43,14 +43,8 @@ export default function Flashcard() {
     }
 
     return (
-        <Container maxWidth="md">
-            <Grid container spacing={3} sx={{ mt: 4 }}>
-                {flashcards.length > 0 && (
-                    <Box sx={{ mt: 4 }}>
-                        <Typography variant='h5'>
-                            Flashcards Preview
-                        </Typography>
-                        <Grid container spacing={3}>
+        <Container maxWidth="lg">
+            <Grid container spacing={3} sx={{ mt: 4, overflow: 'auto' }} >
                             {flashcards.map((flashcard, index) => (
                                 <Grid item xs={12} sm={6} md={4} key={index}>
                                     <Card>
@@ -103,9 +97,6 @@ export default function Flashcard() {
                                     </Card>
                                 </Grid>
                             ))}
-                        </Grid>
-                    </Box>
-                )}
             </Grid>
         </Container>
     );

@@ -59,6 +59,12 @@ export default function Generate() {
     }
 
     const saveFlashcards = async () => {
+        if (!isSignedIn) {
+            alert('You must be logged in to save flashcards.');
+            router.push('/sign-in'); 
+            return;
+        }
+        
         if (!name) {
             alert('Please enter a name')
             return

@@ -131,7 +131,7 @@ export default function Home() {
               <Typography variant="body1">
                 Custom solutions for large teams and organizations.
               </Typography>
-              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+              <Button variant="contained" color="primary" sx={{ mt: 2 }} href="https://mail.google.com/mail/?view=cm&fs=1&to=rafaelchen4@gmail.com&su=Contact%20Sales&body=Hello%2C%0A%0AI'm%20interested%20in%20learning%20more%20about%20your%20services.%20Please%20provide%20more%20information.%0A%0AThank%20you.">
                 Contact Sales
               </Button>
             </Box>
